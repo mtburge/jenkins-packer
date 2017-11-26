@@ -1,0 +1,37 @@
+{
+    "builders": [{
+        "type": "amazon-ebs",
+        "access_key": "{{ user `aws_access_key` }}",
+        "secret_key": "{{ user `aws_secret_key` }}",
+        "region": "{{ user `aws_default_region` }}",
+        "ami_name": "jenkins-ubuntu1604",
+        "ami_description": "Jenkins for Ubuntu 16.04",
+        "ami_groups": "all",
+        "tags": {
+            "Name": "Jenkins (Ubuntu 16.04)"
+        },
+        "source_ami_filter": {
+            "filters": {
+                "virtualization-type": "hvm",
+                "name": "ubuntu/images/*ubuntu-xenial-16.04-amd64-server-*",
+                "root-device-type": "ebs"
+            },
+            "owners": ["099720109477"],
+            "most_recent": true
+        },
+        "instance_type": "t2.micro",
+        "ssh_username": "ubuntu",
+        "force_deregister": true
+    }],
+    "provisioners": [{
+        "type": "shell",
+        "inline": [
+            "wget -O - https://pkg.jenkins.io/debian/jenkins-ci.org.key | sudo apt-key add -",
+            "echo deb https://pkg.jenkins.io/debian-stable binary/ | sudo tee /etc/apt/sources.list.d/jenkins.list",
+            "sudo apt-get -y update",
+            "sudo apt-get -y install jenkins",
+            "sudo systemctl start jenkins",
+            "sudo ufw allow 8080"
+        ]
+    }]
+}
